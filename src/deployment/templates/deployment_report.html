@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Deployment Report - {{ formatted_time }}</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; }
+        .error { color: red; }
+        .warning { color: orange; }
+        .info { color: blue; }
+        .metrics-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+        .chart-container { margin: 20px 0; }
+        img { max-width: 100%; height: auto; }
+    </style>
+</head>
+<body>
+    <h1>Deployment Report</h1>
+    <div class="section">
+        <h2>Overview</h2>
+        <p>Generated: {{ formatted_time }}</p>
+        <p>Deployment Path: {{ deployment_path }}</p>
+        <p>Status: <span class="{{ 'success' if verification_status else 'error' }}">
+            {{ 'Verified' if verification_status else 'Failed' }}
+        </span></p>
+    </div>
+
+    <div class="section">
+        <h2>Size Metrics</h2>
+        <p>Total Size: {{ size_summary.total }}</p>
+        <div class="metrics-grid">
+            {% for ext, data in size_summary.by_type.items() %}
+            <div>
+                <h3>{{ ext }}</h3>
+                <p>Size: {{ data.size }}</p>
+                <p>Files: {{ data.count }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>Verification Results</h2>
+        {% for category, results in verification_summary.items() %}
+        <h3>{{ category|title }}</h3>
+        <ul class="{{ category }}">
+            {% for result in results %}
+            <li>{{ result.message }}</li>
+            {% endfor %}
+        </ul>
+        {% endfor %}
+    </div>
+
+    <div class="section">
+        <h2>Analysis Charts</h2>
+        {% for name, image in images.items() %}
+        <div class="chart-container">
+            <h3>{{ name|replace('_', ' ')|title }}</h3>
+            <img src="{{ image }}" alt="{{ name }}">
+        </div>
+        {% endfor %}
+    </div>
+</body>
+</html>

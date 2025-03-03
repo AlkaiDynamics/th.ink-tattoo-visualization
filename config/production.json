@@ -1,0 +1,8 @@
+{
+    "api_url": "https://api.think-ar.dev",
+    "model_path": "c:/Program Files/thInk/models",
+    "debug_logging": false,
+    "performance_monitoring": true,
+    "mock_services": false,
+    "auto_reload": false
+}

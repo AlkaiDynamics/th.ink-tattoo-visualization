@@ -1,0 +1,35 @@
+{
+    "release_branches": ["main", "release/*"],
+    "changelog_sections": [
+        "Added",
+        "Changed",
+        "Deprecated",
+        "Removed",
+        "Fixed",
+        "Security"
+    ],
+    "build_targets": {
+        "windows": {
+            "python_version": "3.11",
+            "architecture": "x64",
+            "installer_type": "exe"
+        }
+    },
+    "post_release_tasks": [
+        "update_docs",
+        "create_github_release",
+        "deploy_artifacts"
+    ],
+    "environment_variables": {
+        "required": [
+            "THINK_SECRET_KEY",
+            "THINK_API_URL",
+            "THINK_DB_CONNECTION"
+        ],
+        "optional": [
+            "THINK_LOG_LEVEL",
+            "THINK_GPU_ENABLED",
+            "THINK_MAX_WORKERS"
+        ]
+    }
+}

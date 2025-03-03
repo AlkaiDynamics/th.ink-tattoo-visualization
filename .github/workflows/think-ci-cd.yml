@@ -1,0 +1,183 @@
+name: Th.ink CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  # ✅ 1. Setup Backend & Install Dependencies
+  setup_backend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+      
+      - name: Set Up Python
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.9"
+
+      - name: Install Backend Dependencies
+        run: |
+          cd server
+          pip install -r requirements.txt
+
+  # ✅ 2. Setup Frontend & Install Dependencies
+  setup_frontend:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set Up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "16"
+
+      - name: Install Frontend Dependencies
+        run: |
+          cd mobile
+          yarn install
+
+  # ✅ 3. Run Backend Tests
+  backend_tests:
+    needs: setup_backend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+      
+      - name: Run Backend Tests
+        run: |
+          cd server
+          pytest
+
+  # ✅ 4. Run Frontend Tests
+  frontend_tests:
+    needs: setup_frontend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+      
+      - name: Run Frontend Tests
+        run: |
+          cd mobile
+          yarn test
+
+  # ✅ 5. Apply Database Migrations
+  database_migrations:
+    needs: backend_tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Apply Database Migrations
+        run: |
+          cd server
+          alembic upgrade head
+
+  # ✅ 6. Build & Deploy Backend
+  deploy_backend:
+    needs: database_migrations
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Build Docker Image
+        run: |
+          docker build -t think-backend server/
+
+      - name: Push to Docker Hub (Optional)
+        run: |
+          docker tag think-backend your-dockerhub-username/think-backend:latest
+          docker push your-dockerhub-username/think-backend:latest
+
+      - name: Deploy to AWS/GCP
+        run: |
+          terraform apply -auto-approve
+
+  # ✅ 7. Deploy Mobile App
+  deploy_mobile:
+    needs: frontend_tests
+    runs-on: macos-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Install Fastlane
+        run: |
+          gem install fastlane
+
+      - name: Deploy iOS App
+        run: |
+          cd mobile
+          fastlane ios beta
+
+      - name: Deploy Android App
+        run: |
+          cd mobile
+          fastlane android beta
+
+  # ✅ 8. Automate AI Model Training & Deployment
+  train_ai_model:
+    needs: deploy_backend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Train AI Model
+        run: |
+          python train_ai_model.py --dataset updated_tattoo_data
+
+      - name: Evaluate AI Model
+        run: |
+          python evaluate_model.py --threshold 98%
+
+      - name: Deploy AI Model (if threshold met)
+        run: |
+          if python check_model_accuracy.py; then
+            python deploy_ai_model.py
+          else
+            echo "Model accuracy below threshold, skipping deployment."
+          fi
+
+  # ✅ 9. Security Checks (OWASP ZAP + Encryption)
+  security_checks:
+    needs: deploy_backend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Run OWASP ZAP Security Scan
+        run: |
+          zap-cli quick-scan https://your-api-url.com
+
+      - name: Encrypt User Data
+        run: |
+          openssl enc -aes-256-cbc -salt -in tattoo_image.jpg -out encrypted_img.enc
+
+  # ✅ 10. Performance Monitoring & Auto-Scaling
+  performance_monitoring:
+    needs: deploy_backend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Monitor Performance
+        run: |
+          curl -X GET https://your-api-url.com/metrics
+
+      - name: Auto-Scale if Needed
+        run: |
+          if [ $(curl -s https://your-api-url.com/qps) -gt 10000 ]; then
+            terraform apply -auto-approve
+          else
+            echo "No scaling needed."
+          fi

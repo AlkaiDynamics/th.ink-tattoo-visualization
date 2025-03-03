@@ -1,0 +1,8 @@
+{
+    "api_url": "http://localhost:8000",
+    "model_path": "c:/devdrive/thInk/models/dev",
+    "debug_logging": true,
+    "performance_monitoring": true,
+    "mock_services": true,
+    "auto_reload": true
+}
