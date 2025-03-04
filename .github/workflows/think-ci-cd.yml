@@ -25,6 +25,17 @@ jobs:
         run: |
           cd server
           pip install -r requirements.txt
+          pip install flake8 black
+
+      - name: Run Python Linting (flake8)
+        run: |
+          cd server
+          flake8 .
+
+      - name: Check Python Formatting (black)
+        run: |
+          cd server
+          black --check .
 
   # ✅ 2. Setup Frontend & Install Dependencies
   setup_frontend:
@@ -42,6 +53,12 @@ jobs:
         run: |
           cd mobile
           yarn install
+          yarn add eslint --dev
+
+      - name: Run JavaScript Linting (eslint)
+        run: |
+          cd mobile
+          yarn eslint .
 
   # ✅ 3. Run Backend Tests
   backend_tests:

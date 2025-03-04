@@ -1,8 +1,109 @@
 {
-    "api_url": "https://api.think-ar.dev",
-    "model_path": "c:/Program Files/thInk/models",
-    "debug_logging": false,
-    "performance_monitoring": true,
-    "mock_services": false,
-    "auto_reload": false
-}
+    "env": "production",
+    "debug": false,
+    "api": {
+      "url": "https://api.think-ar.dev",
+      "prefix": "/api/v1",
+      "cors_origins": ["https://app.think-ar.dev", "https://www.think-ar.dev"],
+      "allowed_hosts": ["api.think-ar.dev"]
+    },
+    "database": {
+      "url": "postgresql://${DB_USER}:${DB_PASSWORD}@${DB_HOST}:${DB_PORT}/${DB_NAME}",
+      "echo": false,
+      "pool_size": 20,
+      "max_overflow": 20
+    },
+    "security": {
+      "algorithm": "HS256",
+      "token_expire_minutes": 60,
+      "password_min_length": 10,
+      "bcrypt_rounds": 14
+    },
+    "ai": {
+      "model_path": "/opt/think/models",
+      "device": "cuda",
+      "batch_size": 1,
+      "min_confidence": 0.7,
+      "allow_gpu": true,
+      "quantization": true
+    },
+    "ar": {
+      "camera_resolution": [1920, 1080],
+      "min_fps": 45,
+      "max_fps": 60,
+      "shadow_quality": "high",
+      "tracking_precision": 0.95,
+      "skin_detection_threshold": 0.85,
+      "tattoo_overlay_opacity": 0.9
+    },
+    "privacy": {
+      "data_retention_days": 90,
+      "anonymization_enabled": true,
+      "allowed_data_uses": ["service_improvement", "model_training", "analytics"],
+      "opt_out_features": ["model_training", "analytics", "marketing"]
+    },
+    "logging": {
+      "level": "INFO",
+      "file_path": "/var/log/think",
+      "rotation": "1 day",
+      "retention": "90 days",
+      "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    },
+    "services": {
+      "redis": {
+        "host": "${REDIS_HOST}",
+        "port": "${REDIS_PORT}",
+        "password": "${REDIS_PASSWORD}",
+        "db": 0
+      },
+      "sagemaker": {
+        "region": "us-west-2",
+        "model_name": "think-ai-model-prod",
+        "endpoint_name": "think-ai-endpoint-prod"
+      },
+      "stripe": {
+        "public_key": "${STRIPE_PUBLIC_KEY}",
+        "webhook_secret": "${STRIPE_WEBHOOK_SECRET}"
+      }
+    },
+    "subscription": {
+      "tiers": {
+        "free": {
+          "generations_per_day": 3,
+          "resolution": "standard",
+          "features": ["basic_ar", "basic_generation"]
+        },
+        "premium": {
+          "generations_per_day": 20,
+          "resolution": "high",
+          "features": ["advanced_ar", "priority_generation", "style_transfer"]
+        },
+        "professional": {
+          "generations_per_day": -1,
+          "resolution": "ultra",
+          "features": ["all"]
+        }
+      }
+    },
+    "performance": {
+      "caching": {
+        "enabled": true,
+        "ttl_seconds": 3600,
+        "max_size_mb": 500
+      },
+      "throttling": {
+        "enabled": true,
+        "rate_limit_per_minute": 60
+      }
+    },
+    "monitoring": {
+      "prometheus": {
+        "enabled": true,
+        "port": 9090
+      },
+      "health_check": {
+        "interval_seconds": 30,
+        "timeout_seconds": 5
+      }
+    }
+  }

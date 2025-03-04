@@ -21,9 +21,31 @@ jobs:
         python -m pip install --upgrade pip
         pip install build twine
     
+    - name: Lint with flake8
+      run: |
+        pip install flake8 black
+        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+
+    - name: Format check with black
+      run: black --check .
+
     - name: Build package
       run: python -m build
     
+    - name: Run Integration Tests
+      run: |
+        pip install -r server/requirements.txt
+        pytest tests/integration/ --cov=src --cov-report=xml
+      env:
+        CI: true
+
+
+    - name: Security audit
+      run: |
+        pip install bandit safety
+        bandit -r src/ -ll
+        safety check --full-report
     - name: Deploy to PyPI
       env:
         TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
@@ -44,3 +66,9 @@ jobs:
         asset_path: ./dist/main.exe
         asset_name: thInk-installer.exe
         asset_content_type: application/octet-stream
+
+    - name: Upload coverage report
+      uses: codecov/codecov-action@v3
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        file: ./coverage.xml

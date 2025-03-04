@@ -1,8 +1,88 @@
 {
-    "api_url": "http://localhost:8000",
-    "model_path": "c:/devdrive/thInk/models/dev",
-    "debug_logging": true,
-    "performance_monitoring": true,
-    "mock_services": true,
-    "auto_reload": true
-}
+    "env": "development",
+    "debug": true,
+    "api": {
+      "url": "http://localhost:8000",
+      "prefix": "/api/v1",
+      "cors_origins": ["http://localhost:3000", "http://localhost:8000"],
+      "allowed_hosts": ["localhost", "127.0.0.1"]
+    },
+    "database": {
+      "url": "sqlite:///./think_dev.db",
+      "echo": true,
+      "pool_size": 5,
+      "max_overflow": 10
+    },
+    "security": {
+      "algorithm": "HS256",
+      "token_expire_minutes": 30,
+      "password_min_length": 8,
+      "bcrypt_rounds": 12
+    },
+    "ai": {
+      "model_path": "./models",
+      "device": "cuda",
+      "batch_size": 1,
+      "min_confidence": 0.7,
+      "allow_gpu": true,
+      "quantization": true
+    },
+    "ar": {
+      "camera_resolution": [1920, 1080],
+      "min_fps": 45,
+      "max_fps": 60,
+      "shadow_quality": "high",
+      "tracking_precision": 0.95,
+      "skin_detection_threshold": 0.85,
+      "tattoo_overlay_opacity": 0.9
+    },
+    "privacy": {
+      "data_retention_days": 90,
+      "anonymization_enabled": true,
+      "allowed_data_uses": ["service_improvement", "model_training", "analytics"],
+      "opt_out_features": ["model_training", "analytics", "marketing"]
+    },
+    "logging": {
+      "level": "DEBUG",
+      "file_path": "./logs",
+      "rotation": "1 day",
+      "retention": "30 days",
+      "format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    },
+    "services": {
+      "redis": {
+        "host": "localhost",
+        "port": 6379,
+        "password": null,
+        "db": 0
+      },
+      "sagemaker": {
+        "region": "us-west-2",
+        "model_name": "think-ai-model-dev",
+        "endpoint_name": "think-ai-endpoint-dev"
+      },
+      "stripe": {
+        "public_key": "pk_test_sample",
+        "webhook_secret": "whsec_sample"
+      }
+    },
+    "subscription": {
+      "tiers": {
+        "free": {
+          "generations_per_day": 3,
+          "resolution": "standard",
+          "features": ["basic_ar", "basic_generation"]
+        },
+        "premium": {
+          "generations_per_day": 20,
+          "resolution": "high",
+          "features": ["advanced_ar", "priority_generation", "style_transfer"]
+        },
+        "professional": {
+          "generations_per_day": -1,
+          "resolution": "ultra",
+          "features": ["all"]
+        }
+      }
+    }
+  }

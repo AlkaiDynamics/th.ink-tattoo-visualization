@@ -6,16 +6,20 @@ from dotenv import load_dotenv
 # Load environment variables from .env file
 load_dotenv()
 
+import logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger(__name__)
+
 def fetch_latest_dataset():
     # Implement dataset fetching logic
-    print("Fetching latest dataset...")
+    logger.info("Fetching latest dataset...")
     # Example: git pull or download from cloud storage
     subprocess.run(["git", "pull"], cwd="data")
-    print("Dataset fetched.")
+    logger.info("Dataset fetched.")
 
 def train_model():
     # Implement AI model training logic using a cloud service
-    print("Training AI model...")
+    logger.info("Training AI model...")
     # Example: Using AWS SageMaker CLI
     # Ensure AWS credentials are configured
     subprocess.run([
@@ -28,23 +32,23 @@ def train_model():
         "--resource-config", "InstanceType=ml.m5.large,InstanceCount=1,VolumeSizeInGB=10",
         "--stopping-condition", "MaxRuntimeInSeconds=86400"
     ])
-    print("Model training initiated.")
+    logger.info("Model training initiated.")
 
 def evaluate_model():
     # Implement model evaluation logic
-    print("Evaluating AI model...")
+    logger.info("Evaluating AI model...")
     # Example: Run evaluation script
     result = subprocess.run([sys.executable, "evaluate_model.py"], capture_output=True, text=True)
     if result.returncode != 0:
-        print("Model evaluation failed.")
+        logger.error("Model evaluation failed.")
         return 0.0
     accuracy = float(result.stdout.strip())
-    print(f"Model accuracy: {accuracy}%")
+    logger.info(f"Model accuracy: {accuracy}%")
     return accuracy
 
 def deploy_model():
     # Implement model deployment logic
-    print("Deploying AI model...")
+    logger.info("Deploying AI model...")
     # Example: Using AWS SageMaker
     subprocess.run([
         "aws", "sagemaker", "create-model",
@@ -52,11 +56,11 @@ def deploy_model():
         "--primary-container", "Image=382416733822.dkr.ecr.us-west-2.amazonaws.com/tensorflow-inference:2.3.0,ModelDataUrl=s3://your-bucket/think-ai-output/model.tar.gz",
         "--execution-role-arn", os.getenv("SAGEMAKER_ROLE_ARN")
     ])
-    print("Model deployed.")
+    logger.info("Model deployed.")
 
 def rollback_model():
     # Implement AI model rollback logic
-    print("Rolling back AI model due to performance degradation...")
+    logger.info("Rolling back AI model due to performance degradation...")
     # Example: Redeploy previous stable model
     subprocess.run([
         "aws", "sagemaker", "update-model",
@@ -64,7 +68,7 @@ def rollback_model():
         "--primary-container", "Image=382416733822.dkr.ecr.us-west-2.amazonaws.com/tensorflow-inference:2.2.0,ModelDataUrl=s3://your-bucket/think-ai-output/previous_model.tar.gz",
         "--execution-role-arn", os.getenv("SAGEMAKER_ROLE_ARN")
     ])
-    print("Model rollback completed.")
+    logger.info("Model rollback completed.")
 
 def main():
     try:
@@ -74,10 +78,10 @@ def main():
         if accuracy >= 98.0:
             deploy_model()
         else:
-            print("Model accuracy below threshold. Initiating rollback.")
+            logger.warning("Model accuracy below threshold. Initiating rollback.")
             rollback_model()
     except Exception as e:
-        print(f"An error occurred: {e}")
+        logger.error(f"An error occurred: {e}")
         sys.exit(1)
 
 if __name__ == "__main__":

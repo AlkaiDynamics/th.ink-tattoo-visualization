@@ -63,3 +63,43 @@ class TestARSystemIntegration:
         # Verify usage tracking
         usage = ar_system.subscription_manager.get_usage(ar_system.user_id)
         assert usage.get('daily_generations', 0) == 5
+
+    @pytest.mark.asyncio
+    async def test_error_handling_integration(self, ar_system):
+        # Test invalid input handling
+        with pytest.raises(ValueError):
+            await ar_system.generate_and_set_tattoo("", style="invalid_style")
+
+        # Test recovery from failed frame processing
+        corrupt_frame = np.zeros((100, 100, 1), dtype=np.uint8)  # Invalid shape
+        processed_frame, metrics = ar_system.process_frame(corrupt_frame)
+        assert "error" in metrics
+        assert metrics["error"].startswith("Invalid frame dimensions")
+
+    @pytest.mark.asyncio
+    async def test_gpu_acceleration_validation(self, ar_system):
+        # Verify GPU utilization in metrics
+        test_frame = np.zeros((1080, 1920, 3), dtype=np.uint8)
+        _, metrics = ar_system.process_frame(test_frame)
+        
+        assert "gpu_usage" in metrics
+        assert 0 <= metrics["gpu_usage"] <= 100
+        assert "gpu_memory" in metrics
+        assert metrics["gpu_memory"]["total"] > 0
+
+    @pytest.mark.asyncio
+    async def test_multi_user_scenario(self, ar_system):
+        # Simulate concurrent users
+        users = [f"user_{i}" for i in range(3)]
+        
+        async def user_flow(user_id):
+            ar_system.set_user(user_id)
+            await ar_system.generate_and_set_tattoo(f"{user_id}_tattoo")
+            frame = np.zeros((1080, 1920, 3), dtype=np.uint8)
+            return ar_system.process_frame(frame)
+
+        # Run concurrent processing
+        results = await asyncio.gather(*[user_flow(u) for u in users])
+        
+        # Verify isolation between users
+        assert len({r[1]["user_id"] for r in results}) == len(users)
